@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Azurite local storage emulator
+__blobstorage__/
+__queuestorage__/
+__tablestorage__/
+__azurite_db_*.json
+AzuriteConfig
