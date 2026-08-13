@@ -12,7 +12,7 @@ function App() {
     const [error, setError] = useState(false);
 
     useEffect(() => {
-        fetch("http://localhost:7071/api/status")
+        fetch("/api/status")
             .then((response) => {
                 if (!response.ok) {
                     throw new Error("API request failed");
