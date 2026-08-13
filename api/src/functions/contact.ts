@@ -58,7 +58,39 @@ export async function contact(
         };
     }
 
-    if (!email.includes("@")) {
+    if (name.length > 100) {
+        return {
+            status: 400,
+            jsonBody: {
+                success: false,
+                error: "Name is too long"
+            }
+        };
+    }
+
+    if (email.length > 254) {
+        return {
+            status: 400,
+            jsonBody: {
+                success: false,
+                error: "Email address is too long"
+            }
+        };
+    }
+
+    if (message.length > 5000) {
+        return {
+            status: 400,
+            jsonBody: {
+                success: false,
+                error: "Message is too long"
+            }
+        };
+    }
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailPattern.test(email)) {
         return {
             status: 400,
             jsonBody: {
@@ -76,18 +108,30 @@ export async function contact(
         createdAt: new Date().toISOString()
     };
 
-    await container.items.create(submission);
+    try {
+        await container.items.create(submission);
 
-    context.log(`Contact submission saved from ${email}`);
+        context.log(`Contact submission saved from ${email}`);
 
-    return {
-        status: 201,
-        jsonBody: {
-            success: true,
-            message: "Contact submission saved successfully",
-            id: submission.id
-        }
-    };
+        return {
+            status: 201,
+            jsonBody: {
+                success: true,
+                message: "Contact submission saved successfully",
+                id: submission.id
+            }
+        };
+    } catch (error) {
+        context.error("Failed to save contact submission", error);
+
+        return {
+            status: 500,
+            jsonBody: {
+                success: false,
+                error: "Unable to save contact submission"
+            }
+        };
+    }
 }
 
 app.http("contact", {
