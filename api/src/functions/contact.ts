@@ -78,18 +78,14 @@ export async function contact(
 
     await container.items.create(submission);
 
-    context.log(`Contact submission received from ${email}`);
+    context.log(`Contact submission saved from ${email}`);
 
     return {
         status: 201,
         jsonBody: {
             success: true,
-            message: "Contact submission received",
-            data: {
-                name,
-                email,
-                message
-            }
+            message: "Contact submission saved successfully",
+            id: submission.id
         }
     };
 }
