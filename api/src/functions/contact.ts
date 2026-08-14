@@ -28,13 +28,20 @@ export async function contact(
     context: InvocationContext
 ): Promise<HttpResponseInit> {
 
-    context.log("Contact API called");
+    context.log("Contact API request received", {
+        method: request.method,
+        url: request.url
+    });
 
     let body: ContactRequest;
 
     try {
         body = await request.json() as ContactRequest;
+
+        context.log("Contact JSON parsed successfully");
     } catch {
+        context.warn("Contact request rejected: invalid JSON");
+
         return {
             status: 400,
             jsonBody: {
@@ -49,6 +56,8 @@ export async function contact(
     const message = body.message?.trim();
 
     if (!name || !email || !message) {
+        context.warn("Contact validation failed: missing required field");
+
         return {
             status: 400,
             jsonBody: {
@@ -59,6 +68,8 @@ export async function contact(
     }
 
     if (name.length > 100) {
+        context.warn("Contact validation failed: name too long");
+
         return {
             status: 400,
             jsonBody: {
@@ -69,6 +80,8 @@ export async function contact(
     }
 
     if (email.length > 254) {
+        context.warn("Contact validation failed: email too long");
+
         return {
             status: 400,
             jsonBody: {
@@ -79,6 +92,8 @@ export async function contact(
     }
 
     if (message.length > 5000) {
+        context.warn("Contact validation failed: message too long");
+
         return {
             status: 400,
             jsonBody: {
@@ -91,6 +106,8 @@ export async function contact(
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailPattern.test(email)) {
+        context.warn("Contact validation failed: invalid email format");
+
         return {
             status: 400,
             jsonBody: {
@@ -99,6 +116,10 @@ export async function contact(
             }
         };
     }
+
+    context.log("Contact validation passed", {
+        messageLength: message.length
+    });
 
     const submission = {
         id: crypto.randomUUID(),
@@ -109,9 +130,19 @@ export async function contact(
     };
 
     try {
+        context.log("Cosmos DB write started", {
+            submissionId: submission.id
+        });
+
         await container.items.create(submission);
 
-        context.log(`Contact submission saved from ${email}`);
+        context.log("Cosmos DB write completed", {
+            submissionId: submission.id
+        });
+
+        context.log("Contact API completed successfully", {
+            submissionId: submission.id
+        });
 
         return {
             status: 201,
@@ -122,7 +153,7 @@ export async function contact(
             }
         };
     } catch (error) {
-        context.error("Failed to save contact submission", error);
+        context.error("Contact submission failed", error);
 
         return {
             status: 500,
