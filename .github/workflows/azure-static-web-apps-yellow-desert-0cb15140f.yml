@@ -40,6 +40,32 @@ jobs:
           webhook-type: incoming-webhook
           payload: |
             text: "Azure Portfolio deployment: ${{ job.status }}"
+            blocks:
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "*Azure Portfolio Deployment*\nStatus: *${{ job.status }}*"
+              - type: "section"
+                fields:
+                  - type: "mrkdwn"
+                    text: "*Repository:*\n${{ github.repository }}"
+                  - type: "mrkdwn"
+                    text: "*Branch:*\n${{ github.ref_name }}"
+                  - type: "mrkdwn"
+                    text: "*Triggered by:*\n${{ github.actor }}"
+                  - type: "mrkdwn"
+                    text: "*Commit:*\n`${{ github.sha }}`"
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "*Commit message:*\n${{ github.event.head_commit.message }}"
+              - type: "actions"
+                elements:
+                  - type: "button"
+                    text:
+                      type: "plain_text"
+                      text: "View GitHub Actions Run"
+                    url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
